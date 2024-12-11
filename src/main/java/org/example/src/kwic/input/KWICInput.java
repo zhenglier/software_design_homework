@@ -1,22 +1,26 @@
 package org.example.src.kwic.input;
 
-import org.example.src.factory.interfaces.TextReader;
-import org.example.src.kwic.KWICProcessor;
+import org.example.src.factory.interfaces.DataSource;
+import org.example.src.pipe.SimplePipe;
 
-public class KWICInput {
-    private TextReader reader;
-    private KWICProcessor processor;
+public class KWICInput extends Thread {
+    private SimplePipe output;
+    private DataSource dataSource;
 
-    public KWICInput(TextReader reader, KWICProcessor processor) {
-        this.reader = reader;
-        this.processor = processor;
+    public KWICInput(SimplePipe output) {
+        this.output = output;
     }
 
-    public void processInput(String input) {
-        reader.read();
-        String[] lines = input.split("\n");
-        for (String line : lines) {
-            processor.addLine(line.trim());
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    @Override
+    public void run() {
+        String line;
+        while ((line = dataSource.readLine()) != null) {
+            output.putData(line);
         }
+        output.putData(null); // 结束标记
     }
-} 
+}
